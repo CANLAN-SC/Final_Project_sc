@@ -20,7 +20,7 @@ class PreBridgeOCRNode:
         self.ocr_enabled = False
         
         # 参数配置：图像话题名称（可在launch中配置）
-        image_topic = rospy.get_param("~image_topic", "/camera/image_raw")
+        image_topic = rospy.get_param("~image_topic", "/front/image_raw")
         
         # 订阅摄像头图像
         self.image_sub = rospy.Subscriber(image_topic, Image, self.image_callback)
@@ -87,8 +87,8 @@ class PreBridgeOCRNode:
         roi = thresh[int(0.21*h):int(0.79*h), int(0.34*w):int(0.66*w)]
         
         # 显示ROI便于调试
-        cv2.imshow("OCR ROI", roi)
-        cv2.waitKey(1)
+        #cv2.imshow("OCR ROI", roi)
+        #cv2.waitKey(1)
         
         # 使用Tesseract OCR进行识别：
         # --psm 10表示识别单个字符，设置白名单仅限数字0～9

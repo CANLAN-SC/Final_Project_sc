@@ -1,7 +1,7 @@
 import cv2
 import pytesseract
 
-# 配置 pytesseract 路径 (如果需要)
+# 配置 pytesseract 路径 (WINDOWS需要)
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 
 

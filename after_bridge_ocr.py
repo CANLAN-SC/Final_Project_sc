@@ -19,7 +19,7 @@ class PostBridgeOCRNode:
         self.target_digit = None
 
         # 订阅图像话题，参数化配置（默认为 /camera/image_raw）
-        image_topic = rospy.get_param("~image_topic", "/camera/image_raw")
+        image_topic = rospy.get_param("~image_topic", "/front/image_raw")
         self.image_sub = rospy.Subscriber(image_topic, Image, self.image_callback)
         # 订阅OCR触发指令（由3D LiDAR检测节点发出）
         self.ocr_trigger_sub = rospy.Subscriber("/ocr_trigger", Bool, self.ocr_trigger_callback)
