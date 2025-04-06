@@ -45,36 +45,52 @@ class PreBridgeOCRNode:
             self.pre_bridge_complete = True
     
     def image_callback(self, msg):
+        """
+        图像回调函数。仅当OCR触发标志有效且过桥前阶段未完成时，
+        对当前图像进行预处理、OCR识别，并保存结果。
+        """
         if not self.ocr_enabled or self.pre_bridge_complete:
             return
-        
+
         try:
+            # 将图像转换为 OpenCV 格式并保存到本地
             cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+            save_path = "frame.jpg"  # 修改为你自己的保存路径
+            cv2.imwrite(save_path, cv_image)
+
+            # 从本地重新读取图像
+            cv_image = cv2.imread(save_path)
+            if cv_image is None:
+                rospy.logerr("Failed to read saved image from path: %s", save_path)
+                return
+
         except Exception as e:
-            rospy.logerr("CvBridge Error: %s", e)
+            rospy.logerr("Image processing error: %s", e)
             return
-        
+
+        # 图像预处理：
         gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
         thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                       cv2.THRESH_BINARY_INV, 11, 2)
+                                    cv2.THRESH_BINARY_INV, 11, 2)
         h, w = thresh.shape
-        roi = thresh[int(0.15*h):int(0.80*h), int(0.10*w):int(0.70*w)]
+        roi = thresh[int(0.15*h):int(0.80*h), int(0.25*w):int(0.75*w)]
 
-        roi_image_msg = self.bridge.cv2_to_imgmsg(roi, encoding="mono8")
-        self.preprocessed_image_pub.publish(roi_image_msg)
+        # 使用 PIL.Image 显示 ROI
+        Image.fromarray(roi).show()
 
-        custom_config = r'--psm 10 -c tessedit_char_whitelist=0123456789'
-        ocr_text = pytesseract.image_to_string(roi, config=custom_config).strip()
-        
-        # 仅识别单个数字（个位数）
-        if len(ocr_text) == 1 and ocr_text.isdigit():
+        # 使用Tesseract OCR进行识别
+        custom_config = r'--psm 7 -c tessedit_char_whitelist=0123456789'
+        ocr_text = pytesseract.image_to_string(roi, config=custom_config)
+        ocr_text = ocr_text.strip()
+
+        if ocr_text and ocr_text.isdigit():
             digit = int(ocr_text)
-            rospy.loginfo("Recognized single digit: %d", digit)
+            rospy.loginfo("Recognized digit: %d", digit)
             self.digit_pub.publish(digit)
             self.ocr_results.append(digit)
         else:
-            rospy.loginfo("OCR did not recognize a valid single digit. OCR result: '%s'", ocr_text)
-        
+            rospy.loginfo("No valid digit recognized in this frame. OCR result: '%s'", ocr_text)
+
         self.ocr_enabled = False
 
 if __name__ == '__main__':
