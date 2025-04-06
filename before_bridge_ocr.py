@@ -85,7 +85,7 @@ class PreBridgeOCRNode:
                                        cv2.THRESH_BINARY_INV, 11, 2)
         h, w = thresh.shape
         # roi = thresh[int(0.21*h):int(0.79*h), int(0.34*w):int(0.66*w)]
-        roi = thresh[int(0.15*h):int(0.80*h), int(0.20*w):int(0.80*w)]
+        roi = thresh[int(0.15*h):int(0.80*h), int(0.25*w):int(0.75*w)]
         
         # 使用 PIL.Image 显示 ROI
         Image.fromarray(roi).show()

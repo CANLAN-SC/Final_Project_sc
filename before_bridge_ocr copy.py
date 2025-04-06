@@ -58,22 +58,22 @@ class PreBridgeOCRNode:
         thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                        cv2.THRESH_BINARY_INV, 11, 2)
         h, w = thresh.shape
-        roi = thresh[int(0.15*h):int(0.80*h), int(0.20*w):int(0.80*w)]
+        roi = thresh[int(0.15*h):int(0.80*h), int(0.10*w):int(0.70*w)]
 
-        # 发布预处理后的ROI图像到新话题
         roi_image_msg = self.bridge.cv2_to_imgmsg(roi, encoding="mono8")
         self.preprocessed_image_pub.publish(roi_image_msg)
 
-        custom_config = r'--psm 7 -c tessedit_char_whitelist=0123456789'
+        custom_config = r'--psm 10 -c tessedit_char_whitelist=0123456789'
         ocr_text = pytesseract.image_to_string(roi, config=custom_config).strip()
         
-        if ocr_text and ocr_text.isdigit():
+        # 仅识别单个数字（个位数）
+        if len(ocr_text) == 1 and ocr_text.isdigit():
             digit = int(ocr_text)
-            rospy.loginfo("Recognized digit: %d", digit)
+            rospy.loginfo("Recognized single digit: %d", digit)
             self.digit_pub.publish(digit)
             self.ocr_results.append(digit)
         else:
-            rospy.loginfo("No valid digit recognized in this frame. OCR result: '%s'", ocr_text)
+            rospy.loginfo("OCR did not recognize a valid single digit. OCR result: '%s'", ocr_text)
         
         self.ocr_enabled = False
 
