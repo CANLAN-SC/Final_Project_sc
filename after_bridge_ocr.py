@@ -68,14 +68,16 @@ class PostBridgeOCRNode:
         thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                        cv2.THRESH_BINARY_INV, 11, 2)
         h, w = thresh.shape
-        roi = thresh[int(0.21*h):int(0.79*h), int(0.34*w):int(0.66*w)]
+        # roi = thresh[int(0.21*h):int(0.79*h), int(0.34*w):int(0.66*w)]
+        roi = thresh[int(0.15*h):int(0.80*h), int(0.20*w):int(0.80*w)]
+
         # 显示ROI便于调试（可选）
         cv2.imshow("Post-bridge OCR ROI", roi)
         cv2.waitKey(1)
 
         # 使用Tesseract OCR识别数字
         # 参数 --psm 10 表示识别单个字符，同时仅允许识别数字0~9
-        custom_config = r'--psm 10 -c tessedit_char_whitelist=0123456789'
+        custom_config = r'--psm 7 -c tessedit_char_whitelist=0123456789'
         ocr_text = pytesseract.image_to_string(roi, config=custom_config)
         ocr_text = ocr_text.strip()
 
